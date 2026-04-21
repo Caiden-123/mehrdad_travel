@@ -155,7 +155,15 @@
     </div>
   </div>
 
-  <script type="py" sre="static/pyscript/ui.py"><script</script>
+  <py-config>
+    [[fetch]]
+    from = "/static/pyscript"
+    files = ["api.py", "domain.py", "ui.py"]
+  </py-config>
+
+  <script type="py" src="static/pyscript/ui.py">
+    
+  </script>
 
 </body>
 

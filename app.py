@@ -1,5 +1,5 @@
-from db.db import db
-from flask import Flask, render_template, make_response
+from db.db import Database
+from flask import Flask, render_template, make_response, request
 
 app = Flask(__name__)
 print("Hello")
@@ -9,10 +9,16 @@ def index():
 
 @app.route("/api/holidays", methods =["GET"])
 def serve_holidays():
-    holidays = db.get_holidays("*")
+    location = request.args.get("location")
+    if location is None:
+        return make_response(None, 400)
+    
+    with Database() as db:
+        holidays = db.get_holidays(location)
+
 
     return make_response(holidays, 200)
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug = True) 
