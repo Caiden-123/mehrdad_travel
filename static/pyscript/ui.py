@@ -1,6 +1,8 @@
 from pyscript import document, when
 from api import get_request_holidays
 
+# test
+
 @when("click", ".search-cta")
 async def click_go(e):
     # get the location 

@@ -15,6 +15,7 @@ def serve_holidays():
     
     with Database() as db:
         holidays = db.get_holidays(location)
+        
 
 
     return make_response(holidays, 200)
