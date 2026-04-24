@@ -1,27 +1,67 @@
 from pyscript import document, when
 
-from api import get_request_holidays
+from api import get_request_holidays, post_request_booking
 
 
-@when("select", "#trip")
+holiday = ""
+
+
+
+    
+@when("change", "#trip")
 def select_holiday(e):
     # get the rest of the form elements out of the DOM (getElementById)
-
-
-    form = document.getElementsByClassName("booking")
-    for child in form:
-        
-
-
     # un-disable all of them
 
-    # store which holiday was clicked
-    holiday = e.target.innerHTML
+    print("select_holiday")
+    form = document.getElementsByClassName("booking")[0]
+
+    inputs = form.getElementsByTagName("input")
+    selects = form.getElementsByTagName("select") 
+
+    for _input_ in inputs:
+         _input_.disabled = False
+    
+    for select in selects:
+        select.disabled = False
+
+def create_booking():
+    # get the stuff from the fields
+
+    customer_forename, customer_surname = document.getElementById("cust-name").value.split(" ")
+    customer_telephone = document.getElementById("cust-tell").value
 
 
+    guest_name = document.getElementById("guest1".value)
+    allergies = document.getElementsByClassName("checkboxes")
+    guest_allergies = []
+
+    for allergy in guest_allergies:
+        if allergy.checked:
+            guest_allergies.append(allergy.name)
+
+
+    # make dictionary (which contains a Holiday object, and a customer object)
+    booking = {"customer_forename" : customer_forename, "customer_surname" : customer_surname, "customer_telephone": customer_telephone, "holiday_id" : None, "guest" : [{"guest_name" : guest_name, "allergies" : guest_allergies, "food" : None}]}
+
+    
+@when("click",) 
+async def click_book_holiday(e):
+    '''Triggers a request to add the new booking to the database'''
+    booking = create_booking()
+    feedback = await post_request_booking(booking)
+
+@when("click",)
+async def click_add_another_guest():
+    '''Duplicates the customer form for another guest'''
+
+def save_for_later():
+    '''Save the partially completed form using a cookie'''
 
 @when("click", ".search-cta")
 async def click_go(e):
+
+    '''Sends a request to the database to find holidays matching the location the user enters'''
 
     location_input = document.getElementById("dest")
     location = location_input.value
@@ -29,8 +69,7 @@ async def click_go(e):
     holidays = await get_request_holidays(location)
     
     load_holidays_to_select_trip_dropdown(holidays)
-
-
+    print("click_go")
 
 def load_holidays_to_select_trip_dropdown(holidays):
 
@@ -52,7 +91,6 @@ def load_holidays_to_select_trip_dropdown(holidays):
     select_var.disabled = False
 
     for holiday in holidays:
-        print(holiday)
 
         duration = holiday["duration"]
         location = holiday["location"]
@@ -73,3 +111,4 @@ def load_holidays_to_select_trip_dropdown(holidays):
         # add as a child of the select element
 
         select_var.appendChild(option)
+    

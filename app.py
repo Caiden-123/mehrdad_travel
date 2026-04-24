@@ -4,7 +4,6 @@ from flask import Flask, render_template, make_response, request
 
 
 app = Flask(__name__)
-print("Hello")
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -21,7 +20,7 @@ def serve_holidays():
 
     with Database() as db:
         holidays = db.get_holidays(location)
-        
+
 
     return make_response(holidays, 200)
 

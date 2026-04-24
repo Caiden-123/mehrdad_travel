@@ -22,9 +22,9 @@ class Holiday:  # make sure this matches the database
     
 @dataclass
 class Customer:
+    id: str
     forename: str
     surname: str
-    id: str
     telephone: str
     
 
@@ -32,10 +32,31 @@ class Customer:
 class Booking:
     customer: Customer
     holiday: Holiday
+    num_guest: int
 
 @dataclass
-class Flight:
-    airline: str
-    flight_number: str
+class Allergen:
+    id: int
+    name: str
+
+@dataclass
+class Guest:
+    id: int
+    booking: Booking
+    name: str
+    allergens: list[Allergen]
+
+@dataclass
+class Food:
+    id: int
+    guest: Guest
+    choice: str
+    
+@dataclass
+class PlaneJourney:
+    id: str
+    departure_airport: str
+    arrival_airport: str
     departure_time: datetime
+    airline: str
     duration: int

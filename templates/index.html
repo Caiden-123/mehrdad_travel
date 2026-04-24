@@ -82,10 +82,10 @@
               <div style="margin-top:10px;">
                 <div class="field" style="margin-bottom:6px;">Select guest 1 food allergies</div>
                 <div class="checkboxes" aria-hidden="true">
-                  <label class="checkbox"><input type="checkbox" disabled /> cheese</label>
-                  <label class="checkbox"><input type="checkbox" disabled /> shellfish</label>
-                  <label class="checkbox"><input type="checkbox" disabled /> dairy</label>
-                  <label class="checkbox"><input type="checkbox" disabled /> pineapple</label>
+                  <label class="checkbox"><input type="checkbox" name="cheese" disabled /> cheese</label>
+                  <label class="checkbox"><input type="checkbox" name="shellfish" disabled /> shellfish</label>
+                  <label class="checkbox"><input type="checkbox" name="dairy" disabled /> dairy</label>
+                  <label class="checkbox"><input type="checkbox" name="pineapple" disabled /> pineapple</label>
                 </div>
               </div>
 
@@ -160,6 +160,10 @@
     [[fetch]]
     from = "/static/pyscript"
     files = ["api.py", "domain.py", "ui.py"]
+
+    [[fetch]]
+    from = "/static"
+    files = ["models.py"]
   </py-config>
 
   <script type="py" src="static/pyscript/ui.py">
