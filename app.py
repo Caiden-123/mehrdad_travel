@@ -11,6 +11,14 @@ def index():
 
 # how to do query parameters in Flask
 
+@app.route("/api/bookings/new", methods = ["POST"])
+def add_new_bookings():
+    print("1234567890")
+
+    new_booking = request.json
+
+    return make_response({"foo":"bar"}, 200)
+
 @app.route("/api/holidays", methods=["GET"])
 def serve_holidays():
     location = request.args.get("location")

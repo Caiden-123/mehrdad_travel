@@ -1,7 +1,8 @@
-from pyscript import document, when
+from pyscript import document, when, display
 
 from api import get_request_holidays, post_request_booking
 
+from dto import parse_booking, parse_guest
 
 holiday = ""
 
@@ -15,43 +16,52 @@ def select_holiday(e):
 
     print("select_holiday")
     form = document.getElementsByClassName("booking")[0]
-
-    inputs = form.getElementsByTagName("input")
-    selects = form.getElementsByTagName("select") 
+    inputs = form.querySelectorAll("input, button, select")
 
     for _input_ in inputs:
          _input_.disabled = False
-    
-    for select in selects:
-        select.disabled = False
 
 def create_booking():
     # get the stuff from the fields
 
-    customer_forename, customer_surname = document.getElementById("cust-name").value.split(" ")
-    customer_telephone = document.getElementById("cust-tell").value
+    customer_name = document.getElementById("cust-name").value
+    customer_telephone = document.getElementById("cust-tel").value
 
-
-    guest_name = document.getElementById("guest1".value)
+    guest_meal = document.getElementById("meal")
+    guest_name = document.getElementById("guest1").value
     allergies = document.getElementsByClassName("checkboxes")
     guest_allergies = []
-
     for allergy in guest_allergies:
-        if allergy.checked:
-            guest_allergies.append(allergy.name)
-
-
-    # make dictionary (which contains a Holiday object, and a customer object)
-    booking = {"customer_forename" : customer_forename, "customer_surname" : customer_surname, "customer_telephone": customer_telephone, "holiday_id" : None, "guest" : [{"guest_name" : guest_name, "allergies" : guest_allergies, "food" : None}]}
+        try:
+            if allergy.checked:
+                guest_allergies.append(allergy.name)
+        except AttributeError:
+            pass
 
     
-@when("click",) 
+    holiday_id = document.getElementById("trip").value
+
+
+    # come back to multiple guests later
+
+    guest = parse_guest(guest_name, allergies, guest_meal)
+
+    guest = [guest]
+
+    booking = parse_booking(customer_name, customer_telephone, holiday_id, guest)
+
+    return booking
+    # make dictionary (which contains a Holiday object, and a customer object)
+
+
+
+@when("click", "#book_holiday") 
 async def click_book_holiday(e):
     '''Triggers a request to add the new booking to the database'''
     booking = create_booking()
     feedback = await post_request_booking(booking)
+    display(feedback)
 
-@when("click",)
 async def click_add_another_guest():
     '''Duplicates the customer form for another guest'''
 
@@ -108,7 +118,11 @@ def load_holidays_to_select_trip_dropdown(holidays):
 
         option.innerHTML = option_text
 
+        option.value = holiday["id"]
+
         # add as a child of the select element
 
         select_var.appendChild(option)
+
+        
     
