@@ -27,7 +27,7 @@ def create_booking():
     customer_name = document.getElementById("cust-name").value
     customer_telephone = document.getElementById("cust-tel").value
 
-    guest_meal = document.getElementById("meal")
+    guest_meal = document.getElementById("meal").value
     guest_name = document.getElementById("guest1").value
     allergies = document.getElementsByClassName("checkboxes")
     guest_allergies = []
@@ -44,7 +44,7 @@ def create_booking():
 
     # come back to multiple guests later
 
-    guest = parse_guest(guest_name, allergies, guest_meal)
+    guest = parse_guest(guest_name, guest_allergies, guest_meal)
 
     guest = [guest]
 

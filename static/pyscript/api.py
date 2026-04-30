@@ -6,6 +6,7 @@ async def post_request_booking(booking_data: dict):
     method="POST",
     headers = {"Content-Type" : "Application/json"},
     body = dumps(booking_data))
+    
     data = await response.json()
 
     return data

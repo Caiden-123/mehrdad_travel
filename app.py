@@ -13,11 +13,24 @@ def index():
 
 @app.route("/api/bookings/new", methods = ["POST"])
 def add_new_bookings():
-    print("1234567890")
+    print("We managed to get pyscript to send a POST request")
 
     new_booking = request.json
 
-    return make_response({"foo":"bar"}, 200)
+    print(new_booking)
+
+    # make models out of the data that was received
+
+
+    # invalid data
+        # return ERROR status code 400
+
+    # valid data
+        # run a database function
+    
+
+
+    return make_response({"status":"Booking successful."}, 200)
 
 @app.route("/api/holidays", methods=["GET"])
 def serve_holidays():
@@ -27,7 +40,7 @@ def serve_holidays():
         return make_response(None, 400)
 
     with Database() as db:
-        holidays = db.get_holidays(location)
+        holidays = db.get_holidays_by_location(location)
 
 
     return make_response(holidays, 200)
