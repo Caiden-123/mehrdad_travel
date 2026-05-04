@@ -25,12 +25,12 @@ class Customer:
     surname: str
     telephone: str
     
-
 @dataclass
 class Booking:
+    id : str
     customer: Customer
     holiday: Holiday
-    num_guest: int
+    guests: list[Guest]
 
 @dataclass
 class Allergen:
