@@ -32,7 +32,7 @@ def add_new_bookings():
         with Database() as db:
             confirmed_booking = db.process_booking(new_booking)
     except Exception as e:
-        return make_response({"status": "Booking successful."}, 200)
+        return make_response({"error":e}, 500)
     
 
 

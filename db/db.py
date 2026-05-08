@@ -1,3 +1,12 @@
+import sys
+from pathlib import Path
+
+# Path to the directory of the current script
+current_dir = Path(__file__).resolve().parent
+
+# Add the parent directory (one level up) to sys.path
+sys.path.append(str(current_dir.parent))
+
 from typing import Tuple
 from random import randint
 import sqlite3
@@ -44,7 +53,7 @@ class Database:
         """work out the new customer's ID
         write the new customer to the database
         return the new customer as a Customer object"""
-        id = forename[0] + surname[:2] + str(randint(0,999).zfll(3))
+        id = forename[0] + surname[:2] + str(randint(0,999)).zfill(3)
         self.__cursor.execute(f"INSERT INTO CUSTOMER VALUES( '{id}', '{forename}', '{surname}', '{telephone}') ")
 
         return Customer(id, forename, surname, telephone)
@@ -69,28 +78,39 @@ class Database:
         return None
 
 
-    def create_new_guest(self, guest_name: str, booking : Booking, allergies : list[Allergen]) -> Guest:
+    def create_new_guest(self, guest_name: str, booking : Booking, allergies : list[Allergen], meal : Food) -> Guest:
         """write a new guest to the database (priary key will be made automatically
         associate the new guest with their allergies)
         return the new guest as a Guest"""
-        guest_id = self.__cursor.execute("INSERT INTO GUEST VALUES (NULL, ?, ?) RETURNING GUEST.GuestID", (Booking.id, guest_name)).fetchone()
+        guest_id = self.__cursor.execute("INSERT INTO GUEST VALUES (NULL, ?, ?) RETURNING GUEST.GuestID", (Booking.id, guest_name)).fetchone()[0]
 
         query = ""
         for allergen in allergies:
-            query += f"INSERT INTO GUEST_ALLERGEN VALUES {guest_id} {allergen.id}"
+            query += f"INSERT INTO GUEST_ALLERGEN VALUES ({guest_id}, {allergen.id}),"
         
-        self.__cursor.execute(query)
+        self.__cursor.execute(query[:-1])
 
-        return Guest(guest_id, booking, guest_name, allergies)
+        return Guest(guest_id, booking, guest_name, allergies, meal)
 
-    def create_new_booking(self, customer : Customer, holiday : Holiday) -> Booking:
-        """write a new booking to the database
-        return omdels if valid"""
-        booking_id = randint(0, 999999)
+    def finalise_new_booking(self, booking: Booking,
+                            customer : Customer, 
+                            holiday : Holiday) -> Booking:
+        """finalise the new booking by adding it to the database
+        return the new booking as a booking """
+        booking.id = str(randint(0, 999999)).zfill(6)
+        booking.customer = customer.id
+        booking.holiday = holiday.id
 
-        self.__cursor.execute(f"INSERT INTO BOOKING VALUES('{booking_id}', '{customer.id}', '{holiday.id}', NULL)")
+        self.__cursor.execute(f"INSERT INTO BOOKING VALUES('{booking.id}', '{customer.id}', '{holiday.id}', '{len(booking.guests)}')")
 
-        return Booking(booking_id, customer, holiday, None)
+        return booking
+
+    def add_new_guest(self, booking : Booking, new_guest: Guest)-> Booking:
+        """add a new guest to the booking,
+        return the updated booking"""
+        booking.guests.append(Guest)
+        return booking
+
 
     def get_food_choice_by_name(self, food_choice : str) -> Food:
         record = self.__cursor.execute(f"SELECT * FROM GUEST_FOOD WHERE FoodChoice = '{food_choice}'").fetchone()
@@ -100,7 +120,7 @@ class Database:
 
     def create_new_food_choice(self, guest, food_choice : str) -> Food:
 
-        food_id = self.__cursor.execute(f"INSERT INTO GUEST_FOOD VALUES('NULL, '{guest.id}', '{food_choice}') RETURNING FOOD.FoodID")
+        food_id = self.__cursor.execute("INSERT INTO GUEST_FOOD VALUES(NULL, ?, ?) RETURNING GUEST_FOOD.FoodID", (guest.id, food_choice)).fetchone()
 
         return Food(food_id, guest, food_choice)
     
@@ -142,12 +162,14 @@ class Database:
         if not isinstance(surname, str):
             raise TypeError("surname was not a string")
         
-        customer - self.get_customer_by_names(forename, surname)
+        customer = self.get_customer_by_names(forename, surname)
         if customer is None:
             customer = self.create_new_customer(forename, surname, telephone)
         
 
-        booking = self.create_new_booking(customer, holiday)
+        #booking = self.create_new_booking(customer, holiday)
+        booking = Booking()
+
 
         if not guests:
             raise AttributeError("Guest data missing from post request")
@@ -161,7 +183,7 @@ class Database:
             # assume everything OK if we got to this point
 
             meal = guest.get("meal")
-            allergens = guest.get("allergens")
+            allergens : list[str] = guest.get("allergens")
             name = guest.get("name")
 
             if not name:
@@ -170,12 +192,8 @@ class Database:
             if not meal:
                 raise AttributeError(f"guest {name}'s meal missin from post request data")
             
-            meal = self.get_food_choice_by_name(meal)
-
-            if not meal:
-                raise DatabaseError (f"meal {meal} does not exist")
         
-            if not allergens:
+            if allergens is None:
                 raise AttributeError(f"guest {name}'s allergies missin from post request data")
             
             valid_allergens : list[Allergen]= []
@@ -187,21 +205,27 @@ class Database:
                 
                 valid_allergens.append(allergen)
                 
-            guest = self.create_new_guest(booking, name, valid_allergens)
+            guest = self.create_new_guest(name, booking, valid_allergens, meal)
+            booking = self.add_new_guest(booking, guest)
             food_choice = self.create_new_food_choice(guest, meal)
-            
 
-
-
-
-
-        return holiday, customer, booking, guests, allergens
         
-    
+        self.finalise_new_booking(booking, customer, holiday)
+        
+        return booking
+        
 
-if __name__ == "__main__":
-    # tests
-    print(db.get_holidays("New York"))
-    
 
-    # should see martin davies
+def tests():
+
+    with Database() as db:
+
+        x = db.create_new_customer("Testy", "Testington", "12345678")
+        assert type(x) == Customer
+        assert x.forename == "Testy"
+
+
+
+
+tests()
+    

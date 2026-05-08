@@ -1,5 +1,8 @@
+from __future__ import annotations
 from datetime import date, datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+
 
 @dataclass
 class Holiday:  # make sure this matches the database
@@ -16,6 +19,7 @@ class Holiday:  # make sure this matches the database
         
         if not self.location:
             # go in the database to find the other info
+            pass
 
 
 @dataclass
@@ -27,10 +31,10 @@ class Customer:
     
 @dataclass
 class Booking:
-    id : str
-    customer: Customer
-    holiday: Holiday
-    guests: list[Guest]
+    id : str =""
+    customer: Customer = None
+    holiday: Holiday = None
+    guests: list[Guest] = field(default_factory=list)
 
 @dataclass
 class Allergen:
